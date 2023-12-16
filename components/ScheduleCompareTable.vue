@@ -91,7 +91,7 @@
                   'pi-arrow-up text-green-600': teamRow.medianWins - teamRow.wins > 0,
                   'pi-arrow-down text-rose-600': teamRow.medianWins - teamRow.wins < 0,
                 }"></i>
-                {{ Math.abs(teamRow.wins - teamRow.medianWins) }}
+                {{ teamRow.wins }}-{{ teamRow.wins + teamRow.losses + teamRow.ties - teamRow.wins }}
                 )
               </span>
             </td>
