@@ -2,14 +2,17 @@
   <div class="flex flex-col justify-items-center border border-primary-400 rounded-xl p-10 bg-surface-800 bg-tr"
     :class="{ hidden: !league_id }">
     <div class="text-center">Win Differences for {{ props.name }}</div>
-    <div class="text-center" :class="{ hidden: !loadingTeamData }">
+    <div class="text-center mt-4" :class="{ hidden: !loadingTeamData }">
       <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
     </div>
     <div class="overflow-x-auto" :class="{ hidden: loadingTeamData }">
       <table>
         <thead>
           <tr>
-            <th class="text-left sticky left-0 h-fit bg-surface-800"></th>
+            <th class="text-left sticky left-0 h-fit bg-surface-800">
+              Your Team
+              <i class="pi pi-arrow-right" style="font-size: .75rem"></i>
+            </th>
             <th v-for="team in teamData" :key="team.roster_id" class="p-2">
               {{ team.user_info.display_name }}
             </th>
@@ -47,12 +50,13 @@
             </td>
             <td v-for="teamCol in teamData" :key="teamCol.roster_id" class="text-center p-2">
               <div class="border-t-2 border-surface-600 mb-2"></div>
-              {{ parseFloat(teamCol.avgWinDifference).toFixed(2) }}
+              {{ parseFloat(teamCol.avgWinDifference) > 0 ? "+" : "" }}{{ parseFloat(teamCol.avgWinDifference).toFixed(2)
+              }}
             </td>
           </tr>
           <tr>
             <td class="p-2 sticky left-0 h-fit bg-surface-800">
-              Likely Record
+              Projected Record
             </td>
             <td v-for="teamCol in teamData" :key="teamCol.roster_id" class="text-center p-2">
               {{ teamCol.medianWins }} - {{ teamCol.wins + teamCol.losses + teamCol.ties - teamCol.medianWins }}
@@ -62,10 +66,46 @@
       </table>
     </div>
   </div>
+
+  <div class="flex flex-col justify-items-center border border-primary-400 rounded-xl p-10 bg-surface-800 bg-tr"
+    :class="{ hidden: !league_id }">
+    <div class="text-center">Projected Standings</div>
+    <div class="text-center mt-4" :class="{ hidden: !loadingTeamData }">
+      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    </div>
+    <div class="overflow-x-auto flex flex-col ">
+      <table>
+        <tbody>
+          <tr v-for="(teamRow, index) in projectedStandings" :key="teamRow.roster_id"
+            class="[&:nth-child(6)]:border-b-2 [&:nth-child(6)]:border-primary-400">
+            <td class="p-2 text-white text-center">
+              {{ index + 1 }}
+            </td>
+            <td class="p-2 text-center text-white">
+              {{ teamRow.user_info.display_name }}
+            </td>
+            <td class="p-2 text-center text-white whitespace-nowrap">
+              {{ teamRow.medianWins }}-{{ teamRow.wins + teamRow.losses + teamRow.ties - teamRow.medianWins }}
+              <span class="text-xs whitespace-nowrap" style="font-size: .5rem;">
+                (<i class="pi" :class="{
+                  'pi-arrow-up text-green-600': teamRow.medianWins - teamRow.wins > 0,
+                  'pi-arrow-down text-rose-600': teamRow.medianWins - teamRow.wins < 0,
+                }"></i>
+                {{ Math.abs(teamRow.wins - teamRow.medianWins) }}
+                )
+              </span>
+            </td>
+            <td class="p-2 text-center text-white">
+              {{ teamRow.points }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
   
 <script setup>
-
 import SleeperApi from '../services/SleeperApiService.js';
 
 const props = defineProps({
@@ -77,6 +117,10 @@ const selectedLeague = useSelectedLeague();
 const teamData = ref([]); // Initialize an empty array to store user data
 const loadingTeamData = ref(false);
 
+const projectedStandings = computed(() => {
+  return teamData.value.sort((a, b) => b.medianWins - a.medianWins || b.points - a.points);
+})
+
 watch(() => props.league_id, async (newId, oldId) => {
   loadingTeamData.value = true;
   await loadTableData(newId);
@@ -87,7 +131,7 @@ async function loadTableData(leagueId) {
   try {
     const currentWeek = await SleeperApi.getWeekNumber();
     const playoffStartWeek = selectedLeague.value.settings.playoff_week_start;
-    const lastWeekToCompare = Math.min(currentWeek, playoffStartWeek-1)
+    const lastWeekToCompare = Math.min(currentWeek, playoffStartWeek - 1)
 
     console.log(`Current NFL Week: ${currentWeek}`);
 
@@ -146,6 +190,7 @@ async function loadTableData(leagueId) {
             wins: wins,
             losses: losses,
             ties: ties,
+            points: rosterInfo.settings.fpts + (rosterInfo.settings.fpts_decimal / 100)
           });
         }
       });
