@@ -8,7 +8,7 @@
                     <i class="pi pi-spin pi-spinner absolute top-2/4 -mt-2 right-3 text-surface-600"
                         :style="{ display: searchingUsername ? 'inherit' : 'none' }" />
                     <InputText id="username" type="text" :value="username" placeholder="Search"
-                        aria-describedby="username-help" class="pl-10" />
+                        aria-describedby="username-help" class="pl-10" required />
                 </span>
                 <Button label="Go" type="submit" />
             </div>
@@ -45,7 +45,7 @@ watch(username, async (newName, oldName) => {
 })
 
 async function updateUsername(submitEvent) {
-    username.value = submitEvent.target.elements.username.value
+    username.value = submitEvent.target.elements.username.value.trim();
 }
 
 </script>
