@@ -14,11 +14,9 @@
             </div>
         </form>
 
-        <!-- <Listbox v-model="selectedLeague" :options="leagueOptions" optionLabel="name" class="w-full md:w-14rem" /> -->
-
         <label v-for="league in leagueOptions" :key="league.league_id"
             class="text-center border border-primary-400 rounded-xl p-10"
-            :class="{ 'bg-surface-800': selectedLeague.league_id !== league.league_id, 'bg-surface-600': selectedLeague.league_id === league.league_id }"
+            :class="{ 'bg-surface-800': selectedLeague?.league_id !== league.league_id, 'bg-surface-600': selectedLeague?.league_id === league.league_id }"
             :for="`rb_${league.league_id}`">
             <input type="radio" :id="`rb_${league.league_id}`" v-model="selectedLeague" :value="league"
                 class="invisible absolute" />
@@ -40,7 +38,7 @@ const searchingUsername = ref(false);
 watch(username, async (newName, oldName) => {
     searchingUsername.value = true;
     SleeperApi.getUserDetails(newName).then((userDetails) => {
-        SleeperApi.getLeaguesForUser(userDetails.user_id).then((leagues) => { leagueOptions.value = leagues; searchingUsername.value = false;})
+        SleeperApi.getLeaguesForUser(userDetails.user_id).then((leagues) => { leagueOptions.value = leagues; searchingUsername.value = false; })
     });
 })
 
