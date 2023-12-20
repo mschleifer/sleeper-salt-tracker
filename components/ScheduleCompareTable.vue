@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col justify-items-center border border-primary-400 rounded-xl p-10 bg-surface-800 bg-tr"
-    :class="{ hidden: !league_id }">
+    :class="{ hidden: !isLeagueSelected }">
     <div class="text-center">Win Differences for {{ props.name }}</div>
     <div class="text-center mt-4" :class="{ hidden: !loadingTeamData }">
       <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
@@ -68,7 +68,7 @@
   </div>
 
   <div class="flex flex-col justify-items-center border border-primary-400 rounded-xl p-10 bg-surface-800 bg-tr"
-    :class="{ hidden: !league_id }">
+    :class="{ hidden: !isLeagueSelected }">
     <div class="text-center">Projected Standings</div>
     <div class="text-center mt-4" :class="{ hidden: !loadingTeamData }">
       <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
@@ -116,6 +116,10 @@ const props = defineProps({
 const selectedLeague = useSelectedLeague();
 const teamData = ref([]); // Initialize an empty array to store user data
 const loadingTeamData = ref(false);
+
+const isLeagueSelected = computed(() => {
+  return selectedLeague.value && selectedLeague.value.league_id;
+})
 
 const projectedStandings = computed(() => {
   return teamData.value.sort((a, b) => b.medianWins - a.medianWins || b.points - a.points);
